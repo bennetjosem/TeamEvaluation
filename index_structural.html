@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Structural Observation — Peer Evaluation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:      #0f1923;
+    --surface: #162030;
+    --card:    #1c2b3a;
+    --border:  #2a3f54;
+    --ink:     #e8edf2;
+    --muted:   #7a94aa;
+    --accent:  #e8a020;
+    --accent2: #f0c060;
+    --green:   #40c080;
+    --red:     #e05050;
+    --radius:  10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2rem 1rem 5rem;
+  }
+
+  /* Blueprint grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(32,80,120,0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(32,80,120,0.12) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { max-width: 700px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  .site-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '⬡';
+    position: absolute; top: -20px; right: -20px;
+    font-size: 8rem; color: rgba(232,160,32,0.05);
+    line-height: 1;
+  }
+  .site-header .tag {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); background: rgba(232,160,32,0.12);
+    padding: 0.25rem 0.75rem; border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+  .site-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .site-header p { color: var(--muted); margin-top: 0.5rem; font-size: 0.9rem; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .part-label {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); background: rgba(232,160,32,0.1);
+    border: 1px solid rgba(232,160,32,0.25);
+    padding: 0.2rem 0.65rem; border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+  .card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Key screen ── */
+  #keyScreen { text-align: center; }
+  .key-icon {
+    width: 72px; height: 72px;
+    background: rgba(232,160,32,0.1);
+    border: 1px solid rgba(232,160,32,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 1.25rem;
+  }
+  #keyScreen p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.92rem; line-height: 1.6; }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 1.2rem; }
+  label {
+    display: block;
+    font-size: 0.85rem; font-weight: 600;
+    margin-bottom: 0.4rem; color: var(--ink);
+  }
+  label .hint {
+    font-weight: 400; color: var(--muted);
+    font-size: 0.8rem; display: block; margin-top: 0.15rem;
+  }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.93rem;
+    background: var(--surface);
+    color: var(--ink);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input[readonly] { color: var(--muted); cursor: not-allowed; opacity: 0.8; }
+  textarea { resize: vertical; min-height: 85px; line-height: 1.55; }
+
+  /* ── Checkbox grid ── */
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    font-size: 0.87rem; cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+  .check-item:has(input:checked) { border-color: var(--accent); background: rgba(232,160,32,0.08); }
+  .check-item input { accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Radio row ── */
+  .radio-col { display: flex; flex-direction: column; gap: 0.5rem; }
+  .radio-item {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    font-size: 0.87rem; cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+  .radio-item:has(input:checked) { border-color: var(--accent); background: rgba(232,160,32,0.08); }
+  .radio-item input { accent-color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Scale buttons ── */
+  .scale-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .scale-btn {
+    flex: 1; min-width: 38px;
+    padding: 0.55rem 0.25rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; text-align: center;
+    font-size: 0.9rem; cursor: pointer;
+    background: var(--surface); color: var(--ink);
+    transition: all 0.15s;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .scale-btn:hover { border-color: var(--accent); }
+  .scale-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+  /* ── Peer table ── */
+  .peer-header {
+    display: grid; grid-template-columns: 1fr 90px; gap: 0.75rem;
+    font-size: 0.75rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.5rem; padding: 0 0.1rem;
+  }
+  .peer-row {
+    display: grid; grid-template-columns: 1fr 90px;
+    gap: 0.75rem; align-items: center; margin-bottom: 0.6rem;
+  }
+  .peer-row input[type=number] { text-align: center; }
+  .points-total {
+    text-align: right; font-size: 0.85rem; margin-top: 0.5rem; color: var(--muted);
+  }
+  .points-total span { font-weight: 700; color: var(--ink); }
+  .points-total.over  span { color: var(--red); }
+  .points-total.exact span { color: var(--green); }
+
+  /* ── Rating grid ── */
+  .rating-grid { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .rating-grid th, .rating-grid td {
+    padding: 0.6rem 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .rating-grid th { color: var(--muted); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .rating-grid td:first-child { font-weight: 500; padding-right: 1rem; }
+  .rating-grid td { text-align: center; }
+  .rating-grid input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.8rem 2rem;
+    border: none; border-radius: 8px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.18s; width: 100%;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  /* ── Messages ── */
+  .msg {
+    padding: 0.8rem 1rem; border-radius: 8px;
+    font-size: 0.88rem; margin-bottom: 1rem; display: none; line-height: 1.5;
+  }
+  .msg.error   { background: rgba(224,80,80,0.12); color: #f08080; border: 1px solid rgba(224,80,80,0.3); display: block; }
+  .msg.info    { background: rgba(232,160,32,0.1);  color: var(--accent2); border: 1px solid rgba(232,160,32,0.25); display: block; }
+  .msg.success { background: rgba(64,192,128,0.1);  color: var(--green);   border: 1px solid rgba(64,192,128,0.3);  display: block; }
+
+  /* ── Success screen ── */
+  #successScreen { text-align: center; padding: 3rem 1.5rem; }
+  #successScreen .tick { font-size: 4rem; margin-bottom: 1rem; }
+  #successScreen h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--green); }
+  #successScreen p { color: var(--muted); margin-top: 0.75rem; line-height: 1.6; }
+
+  /* ── Screens ── */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 480px) {
+    .check-grid { grid-template-columns: 1fr; }
+    .peer-row   { grid-template-columns: 1fr 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site-header">
+    <div class="tag">CRC Building · 2025</div>
+    <h1>Structural Observation<br/>Peer Evaluation</h1>
+    <p>Floor Plan Study · Self & Peer Assessment</p>
+  </header>
+
+  <!-- ══════════ SCREEN 1: KEY ══════════ -->
+  <div id="keyScreen" class="screen active">
+    <div class="card" style="text-align:center;">
+      <div class="key-icon">🔑</div>
+      <h2 style="font-family:'Playfair Display',serif;margin-bottom:0.5rem;">Enter your access key</h2>
+      <p>Your faculty will share a unique key with you.<br/>Enter it below to open your evaluation form.</p>
+      <div id="keyError" class="msg error" style="display:none;text-align:left;"></div>
+      <div class="field" style="margin-top:1.25rem;text-align:left;">
+        <label for="keyInput">Access Key</label>
+        <input type="text" id="keyInput" placeholder="e.g. CHR-G1-4X2"
+               autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;" />
+      </div>
+      <button class="btn btn-primary" onclick="validateKey()" id="keyBtn">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN 2: FORM ══════════ -->
+  <div id="formScreen" class="screen">
+
+    <div id="formError" class="msg error" style="display:none;"></div>
+    <div id="formInfo"  class="msg info"  style="display:none;"></div>
+
+    <!-- PART A -->
+    <div class="card">
+      <span class="part-label">Part A</span>
+      <h2>Self Evaluation</h2>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="f_name" readonly />
+      </div>
+      <div class="field">
+        <label>Group</label>
+        <input type="text" id="f_group" readonly />
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label for="f_role">
+          Your specific role in observing the structural system
+          <span class="hint">Describe what you personally did during the basement/first-floor inspection.</span>
+        </label>
+        <textarea id="f_role" rows="4"
+          placeholder="e.g. I sketched the grid layout of the basement, identified primary beams along column lines and measured column sizes at 4 locations..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Tasks handled <span class="hint">Tick all that apply</span></label>
+        <div class="check-grid">
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Site Visit: Physical inspection of CRC Building basement" />
+            Site Visit (basement inspection)
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Structural Sketching: Floor plan or grid layout" />
+            Structural Sketching
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Beam Analysis: Primary vs Secondary beams" />
+            Beam Analysis
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Measurement/Estimation: Column sizes and beam spans" />
+            Measurement / Estimation
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Slab Identification: Slab system and sunken slabs" />
+            Slab Identification
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Space Mapping: Labs, corridors, toilets" />
+            Space Mapping
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="tasks" value="Digital Documentation: Photos and PowerPoint" />
+            Digital Documentation
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f_hours">Approximate hours contributed</label>
+        <input type="number" id="f_hours" min="0" max="200" placeholder="e.g. 8" style="max-width:160px;" />
+      </div>
+
+      <div class="field">
+        <label>Level of involvement</label>
+        <div class="radio-col">
+          <label class="radio-item">
+            <input type="radio" name="involvement" value="High — Led the group / did majority of drawings" />
+            <span><strong>High</strong> — Led the group or did the majority of drawings</span>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="involvement" value="Moderate — Contributed equally to data collection and presentation" />
+            <span><strong>Moderate</strong> — Contributed equally to data collection and presentation</span>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="involvement" value="Low — Only attended the site visit" />
+            <span><strong>Low</strong> — Only attended the site visit</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Rate your contribution <span class="hint">0 = none · 10 = excellent</span></label>
+        <div class="scale-row" id="selfRatingRow"></div>
+      </div>
+
+      <div class="field">
+        <label for="f_selfJustification">Justify your self-rating</label>
+        <textarea id="f_selfJustification" rows="3" placeholder="Be specific and honest..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f_loadTransfer">
+          Most important thing you learned about load transfer (Slab → Beam → Column)
+        </label>
+        <textarea id="f_loadTransfer" rows="3"
+          placeholder="e.g. I understood how secondary beams transfer load to primary beams which then carry it to columns..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f_challenging">
+          Most challenging part of estimating structural dimensions from a basement view
+        </label>
+        <textarea id="f_challenging" rows="3"
+          placeholder="e.g. It was difficult to estimate beam depth because the soffit was partially hidden by MEP services..."></textarea>
+      </div>
+    </div>
+
+    <!-- PART B -->
+    <div class="card">
+      <span class="part-label">Part B</span>
+      <h2>Peer Evaluation</h2>
+
+      <div class="field">
+        <label>
+          Distribute contribution points
+          <span class="hint">Total must equal exactly 100. Base this on who actually did measurements and drawing work.</span>
+        </label>
+        <div class="peer-header"><span>Teammate</span><span>Points</span></div>
+        <div id="peerRows"></div>
+        <div class="points-total" id="pointsTotal">Total: <span>0</span> / 100</div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label for="f_highest">Highest contributor — who led the structural analysis?</label>
+        <input type="text" id="f_highest" placeholder="Team member name" />
+      </div>
+      <div class="field">
+        <label for="f_lowest">Lowest contributor</label>
+        <input type="text" id="f_lowest" placeholder="Team member name" />
+      </div>
+      <div class="field">
+        <label for="f_whyHighest">Why did you assign the highest score to that member?</label>
+        <textarea id="f_whyHighest" rows="3"></textarea>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label>Rate team functioning <span class="hint">1 = Poor · 5 = Excellent</span></label>
+        <table class="rating-grid">
+          <thead>
+            <tr><th>Parameter</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Team coordination during site visit</td>
+              <td><input type="radio" name="coord"   value="1"/></td><td><input type="radio" name="coord"   value="2"/></td>
+              <td><input type="radio" name="coord"   value="3"/></td><td><input type="radio" name="coord"   value="4"/></td>
+              <td><input type="radio" name="coord"   value="5"/></td>
+            </tr>
+            <tr>
+              <td>Accuracy in sharing structural measurements</td>
+              <td><input type="radio" name="accuracy" value="1"/></td><td><input type="radio" name="accuracy" value="2"/></td>
+              <td><input type="radio" name="accuracy" value="3"/></td><td><input type="radio" name="accuracy" value="4"/></td>
+              <td><input type="radio" name="accuracy" value="5"/></td>
+            </tr>
+            <tr>
+              <td>Communication while preparing the floor plan</td>
+              <td><input type="radio" name="commfp"  value="1"/></td><td><input type="radio" name="commfp"  value="2"/></td>
+              <td><input type="radio" name="commfp"  value="3"/></td><td><input type="radio" name="commfp"  value="4"/></td>
+              <td><input type="radio" name="commfp"  value="5"/></td>
+            </tr>
+            <tr>
+              <td>Commitment of members to the assignment</td>
+              <td><input type="radio" name="commit"  value="1"/></td><td><input type="radio" name="commit"  value="2"/></td>
+              <td><input type="radio" name="commit"  value="3"/></td><td><input type="radio" name="commit"  value="4"/></td>
+              <td><input type="radio" name="commit"  value="5"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PART C -->
+    <div class="card">
+      <span class="part-label">Part C</span>
+      <h2>Declaration</h2>
+      <label class="check-item" style="width:100%;font-size:0.9rem;">
+        <input type="checkbox" id="f_declaration" />
+        I confirm that this evaluation is a fair reflection of the structural study performed.
+      </label>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitForm()" id="submitBtn">Submit Evaluation</button>
+    <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-top:0.75rem;">
+      You can only submit once. Make sure everything is correct before submitting.
+    </p>
+  </div>
+
+  <!-- ══════════ SCREEN 3: SUCCESS ══════════ -->
+  <div id="successScreen" class="screen">
+    <div class="card">
+      <div class="tick">✅</div>
+      <h2>Submitted!</h2>
+      <p>Your structural observation peer evaluation has been recorded.<br/>Thank you.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BACKEND_URL = "YOUR_WEB_APP_URL_HERE";
+
+let studentKey = "";
+let teammates  = [];
+let selfRating = null;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function buildRatingButtons() {
+  const row = document.getElementById('selfRatingRow');
+  row.innerHTML = '';
+  for (let i = 0; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'scale-btn';
+    btn.textContent = i;
+    btn.onclick = () => {
+      document.querySelectorAll('#selfRatingRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selfRating = i;
+    };
+    row.appendChild(btn);
+  }
+}
+
+function buildPeerRows(teammateList) {
+  const container = document.getElementById('peerRows');
+  container.innerHTML = '';
+  teammateList.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'peer-row';
+    row.innerHTML = `
+      <input type="text" value="${name}" readonly />
+      <input type="number" id="peer_pts_${i}" min="0" max="100" placeholder="0" oninput="updateTotal()" />
+    `;
+    container.appendChild(row);
+  });
+  updateTotal();
+}
+
+function updateTotal() {
+  let sum = 0;
+  teammates.forEach((_, i) => {
+    sum += parseInt(document.getElementById(`peer_pts_${i}`)?.value) || 0;
+  });
+  const el = document.getElementById('pointsTotal');
+  el.querySelector('span').textContent = sum;
+  el.className = 'points-total' + (sum === 100 ? ' exact' : sum > 100 ? ' over' : '');
+}
+
+async function validateKey() {
+  const key   = document.getElementById('keyInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('keyError');
+  errEl.style.display = 'none';
+  if (!key) { showMsg(errEl, 'Please enter your access key.'); return; }
+
+  const btn = document.getElementById('keyBtn');
+  btn.disabled = true; btn.textContent = 'Checking…';
+
+  try {
+    const resp = await fetch(`${BACKEND_URL}?action=validateKey&key=${encodeURIComponent(key)}`);
+    const data = await resp.json();
+    if (!data.ok) {
+      showMsg(errEl, data.error || 'Invalid key.');
+      btn.disabled = false; btn.textContent = 'Continue →';
+      return;
+    }
+    studentKey = key;
+    teammates  = data.teammates;
+    document.getElementById('f_name').value  = data.name;
+    document.getElementById('f_group').value = data.group;
+    buildPeerRows(teammates);
+    buildRatingButtons();
+    showScreen('formScreen');
+  } catch(e) {
+    showMsg(errEl, 'Could not connect. Please check your connection and try again.');
+    btn.disabled = false; btn.textContent = 'Continue →';
+  }
+}
+
+async function submitForm() {
+  const errEl  = document.getElementById('formError');
+  const infoEl = document.getElementById('formInfo');
+  errEl.style.display = 'none';
+  infoEl.style.display = 'none';
+
+  // Validate peer points
+  let totalPts = 0;
+  teammates.forEach((_, i) => { totalPts += parseInt(document.getElementById(`peer_pts_${i}`)?.value) || 0; });
+  if (totalPts !== 100) {
+    showMsg(infoEl, `⚠️ Peer points total ${totalPts}. They must equal exactly 100.`);
+    infoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (selfRating === null) { showMsg(errEl, 'Please rate your own contribution.'); return; }
+  if (!document.querySelector('input[name=involvement]:checked')) { showMsg(errEl, 'Please select your level of involvement.'); return; }
+  if (!document.getElementById('f_declaration').checked) { showMsg(errEl, 'Please tick the declaration checkbox.'); return; }
+
+  const tasks = Array.from(document.querySelectorAll('input[name=tasks]:checked')).map(c => c.value).join('; ');
+
+  const params = new URLSearchParams({
+    action             : 'submit',
+    key                : studentKey,
+    roleDescription    : document.getElementById('f_role').value,
+    tasksHandled       : tasks,
+    hours              : document.getElementById('f_hours').value,
+    involvement        : document.querySelector('input[name=involvement]:checked')?.value || '',
+    selfRating         : selfRating,
+    selfJustification  : document.getElementById('f_selfJustification').value,
+    loadTransferLearning: document.getElementById('f_loadTransfer').value,
+    challengingPart    : document.getElementById('f_challenging').value,
+    highestContributor : document.getElementById('f_highest').value,
+    lowestContributor  : document.getElementById('f_lowest').value,
+    whyHighest         : document.getElementById('f_whyHighest').value,
+    teamCoordination   : document.querySelector('input[name=coord]:checked')?.value   || '',
+    accuracyMeasurements: document.querySelector('input[name=accuracy]:checked')?.value || '',
+    communicationFloorPlan: document.querySelector('input[name=commfp]:checked')?.value || '',
+    commitment         : document.querySelector('input[name=commit]:checked')?.value  || '',
+    declaration        : 'Yes — I confirm this evaluation is fair'
+  });
+
+  teammates.forEach((name, i) => {
+    params.append(`peer${i+1}name`, name);
+    params.append(`peer${i+1}pts`,  document.getElementById(`peer_pts_${i}`)?.value || '0');
+  });
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  try {
+    const resp = await fetch(BACKEND_URL, { method: 'POST', body: params });
+    const data = await resp.json();
+    if (data.ok) {
+      showScreen('successScreen');
+    } else {
+      showMsg(errEl, data.error || 'Submission failed. Please try again.');
+      btn.disabled = false; btn.textContent = 'Submit Evaluation';
+    }
+  } catch(e) {
+    showMsg(errEl, 'Could not connect. Please try again.');
+    btn.disabled = false; btn.textContent = 'Submit Evaluation';
+  }
+}
+
+function showMsg(el, msg) {
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') validateKey();
+  });
+});
+</script>
+</body>
+</html>
