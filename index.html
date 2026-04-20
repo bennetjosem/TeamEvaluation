@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team Peer Evaluation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:       #f5f0e8;
+    --card:     #fffef9;
+    --ink:      #1a1a2e;
+    --muted:    #6b6b7b;
+    --accent:   #2d6a4f;
+    --accent2:  #52b788;
+    --warn:     #e76f51;
+    --border:   #ddd8cc;
+    --radius:   12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  /* ── Grain overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  .site-header { text-align: center; margin-bottom: 2.5rem; }
+  .site-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: var(--accent);
+    line-height: 1.15;
+  }
+  .site-header p { color: var(--muted); margin-top: 0.5rem; font-size: 0.95rem; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  .part-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: #d8f3dc;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+
+  .card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+  }
+
+  /* ── Key screen ── */
+  #keyScreen { text-align: center; }
+  #keyScreen .key-icon { font-size: 3rem; margin-bottom: 1rem; }
+  #keyScreen p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 1.25rem; }
+  label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--ink);
+  }
+  label .hint {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.82rem;
+    display: block;
+    margin-top: 0.15rem;
+  }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    background: #fff;
+    color: var(--ink);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent2); }
+  input[readonly] { background: #f0f4f0; color: var(--muted); cursor: not-allowed; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── Checkbox grid ── */
+  .check-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .check-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.9rem; cursor: pointer;
+    padding: 0.5rem 0.6rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .check-item:has(input:checked) {
+    border-color: var(--accent2);
+    background: #d8f3dc55;
+  }
+  .check-item input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+  /* ── Scale / radio row ── */
+  .scale-row {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .scale-btn {
+    flex: 1; min-width: 36px;
+    padding: 0.5rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .scale-btn:hover { border-color: var(--accent2); }
+  .scale-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .radio-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .radio-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.9rem; cursor: pointer;
+    padding: 0.45rem 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .radio-item:has(input:checked) { border-color: var(--accent); background: #d8f3dc55; }
+  .radio-item input { accent-color: var(--accent); }
+
+  /* ── Peer table ── */
+  .peer-row {
+    display: grid;
+    grid-template-columns: 1fr 90px;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .peer-row input[type=number] { text-align: center; }
+  .peer-header {
+    display: grid;
+    grid-template-columns: 1fr 90px;
+    gap: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+  .points-total {
+    text-align: right;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    color: var(--muted);
+  }
+  .points-total span { font-weight: 700; color: var(--ink); }
+  .points-total.over span { color: var(--warn); }
+  .points-total.exact span { color: var(--accent); }
+
+  /* ── Rating grid ── */
+  .rating-grid { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .rating-grid th, .rating-grid td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); }
+  .rating-grid th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .rating-grid td:first-child { font-weight: 500; }
+  .rating-grid td { text-align: center; }
+  .rating-grid input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.75rem 1.75rem;
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+  .btn-primary:hover { background: #1f4e38; }
+  .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+
+  /* ── Messages ── */
+  .msg {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .msg.error   { background: #fdecea; color: #c0392b; border: 1px solid #f5b7b1; display: block; }
+  .msg.success { background: #d8f3dc; color: #1b4332; border: 1px solid #95d5b2; display: block; }
+  .msg.info    { background: #e8f4fd; color: #1a5276; border: 1px solid #aed6f1; display: block; }
+
+  /* ── Success screen ── */
+  #successScreen { text-align: center; padding: 3rem 2rem; }
+  #successScreen .tick { font-size: 4rem; margin-bottom: 1rem; }
+  #successScreen h2 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--accent); }
+  #successScreen p { color: var(--muted); margin-top: 0.75rem; }
+
+  /* ── Transitions ── */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 480px) {
+    .check-grid { grid-template-columns: 1fr; }
+    .peer-row { grid-template-columns: 1fr 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site-header">
+    <h1>Team Peer Evaluation</h1>
+    <p>Fire Safety Engineering Assignment · 2025</p>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 1: KEY ENTRY
+  ══════════════════════════════════════════ -->
+  <div id="keyScreen" class="screen active">
+    <div class="card">
+      <div class="key-icon">🔑</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:0.5rem;">Enter your access key</h2>
+      <p>Your faculty will share a unique key with you. Enter it below to open your evaluation form.</p>
+      <div id="keyError" class="msg error"></div>
+      <div class="field" style="margin-top:1.25rem;">
+        <label for="keyInput">Access Key</label>
+        <input type="text" id="keyInput" placeholder="e.g. CHR-G1-4X2" autocomplete="off" autocapitalize="characters" />
+      </div>
+      <button class="btn btn-primary" onclick="validateKey()" id="keyBtn">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 2: EVALUATION FORM
+  ══════════════════════════════════════════ -->
+  <div id="formScreen" class="screen">
+
+    <div id="formError" class="msg error"></div>
+    <div id="formInfo"  class="msg info">⚠️ Points must total exactly 100 before you can submit.</div>
+
+    <!-- PART A -->
+    <div class="card">
+      <span class="part-label">Part A</span>
+      <h2>Self Evaluation</h2>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="f_name" readonly />
+      </div>
+      <div class="field">
+        <label>Group</label>
+        <input type="text" id="f_group" readonly />
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label for="f_whatIDid">
+          Describe what YOU did in this assignment
+          <span class="hint">Be specific — mention actual tasks, not just "I helped".</span>
+        </label>
+        <textarea id="f_whatIDid" rows="4" placeholder="e.g. I visited the site on 12th April, measured floor plan dimensions and identified 4 fire hazards near the electrical panels..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Tasks handled <span class="hint">Tick all that apply</span></label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox" name="tasks" value="Site visit and data collection" /> Site visit & data collection</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="Fire hazard identification" /> Fire hazard identification</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="NBC requirement analysis" /> NBC requirement analysis</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="Drawings / plan preparation" /> Drawings / plan prep</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="Report writing" /> Report writing</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="Photo documentation" /> Photo documentation</label>
+          <label class="check-item"><input type="checkbox" name="tasks" value="Coordination / leadership" /> Coordination / leadership</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f_hours">Approximate hours contributed</label>
+        <input type="number" id="f_hours" min="0" max="200" placeholder="e.g. 10" style="max-width:160px;" />
+      </div>
+
+      <div class="field">
+        <label>Level of involvement</label>
+        <div class="radio-row">
+          <label class="radio-item"><input type="radio" name="involvement" value="High" /> High</label>
+          <label class="radio-item"><input type="radio" name="involvement" value="Moderate" /> Moderate</label>
+          <label class="radio-item"><input type="radio" name="involvement" value="Low" /> Low</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Rate your own contribution <span class="hint">1 = minimal · 10 = excellent</span></label>
+        <div class="scale-row" id="selfRatingRow"></div>
+      </div>
+
+      <div class="field">
+        <label for="f_selfJustification">Justify your self-rating</label>
+        <textarea id="f_selfJustification" rows="3" placeholder="Be honest and specific..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f_learned">What did you learn from this assignment?</label>
+        <textarea id="f_learned" rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f_challenging">What was the most challenging part?</label>
+        <textarea id="f_challenging" rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- PART B -->
+    <div class="card">
+      <span class="part-label">Part B</span>
+      <h2>Peer Evaluation</h2>
+
+      <div class="field">
+        <label>
+          Distribute contribution points
+          <span class="hint">Total must equal exactly 100. Exclude yourself.</span>
+        </label>
+        <div class="peer-header"><span>Teammate</span><span style="text-align:center;">Points</span></div>
+        <div id="peerRows"></div>
+        <div class="points-total" id="pointsTotal">Total: <span>0</span> / 100</div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label for="f_highest">Highest contributor (name)</label>
+        <input type="text" id="f_highest" placeholder="Team member name" />
+      </div>
+      <div class="field">
+        <label for="f_lowest">Lowest contributor (name)</label>
+        <input type="text" id="f_lowest" placeholder="Team member name" />
+      </div>
+      <div class="field">
+        <label for="f_whyHighest">Why did you assign the highest score to that member?</label>
+        <textarea id="f_whyHighest" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label for="f_whyLowest">Why did you assign the lowest score to that member?</label>
+        <textarea id="f_whyLowest" rows="3"></textarea>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label>Rate team functioning <span class="hint">1 = Poor · 5 = Excellent</span></label>
+        <table class="rating-grid">
+          <thead>
+            <tr><th>Parameter</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Team coordination</td>
+              <td><input type="radio" name="coord" value="1"/></td><td><input type="radio" name="coord" value="2"/></td>
+              <td><input type="radio" name="coord" value="3"/></td><td><input type="radio" name="coord" value="4"/></td>
+              <td><input type="radio" name="coord" value="5"/></td>
+            </tr>
+            <tr><td>Equal work distribution</td>
+              <td><input type="radio" name="equal" value="1"/></td><td><input type="radio" name="equal" value="2"/></td>
+              <td><input type="radio" name="equal" value="3"/></td><td><input type="radio" name="equal" value="4"/></td>
+              <td><input type="radio" name="equal" value="5"/></td>
+            </tr>
+            <tr><td>Communication</td>
+              <td><input type="radio" name="comm" value="1"/></td><td><input type="radio" name="comm" value="2"/></td>
+              <td><input type="radio" name="comm" value="3"/></td><td><input type="radio" name="comm" value="4"/></td>
+              <td><input type="radio" name="comm" value="5"/></td>
+            </tr>
+            <tr><td>Commitment of members</td>
+              <td><input type="radio" name="commit" value="1"/></td><td><input type="radio" name="commit" value="2"/></td>
+              <td><input type="radio" name="commit" value="3"/></td><td><input type="radio" name="commit" value="4"/></td>
+              <td><input type="radio" name="commit" value="5"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PART C -->
+    <div class="card">
+      <span class="part-label">Part C</span>
+      <h2>Declaration</h2>
+      <label class="check-item" style="width:100%;">
+        <input type="checkbox" id="f_declaration" />
+        I confirm that the above evaluation is fair and based on actual contribution.
+      </label>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitForm()" id="submitBtn">Submit Evaluation</button>
+    <p style="text-align:center;color:var(--muted);font-size:0.82rem;margin-top:0.75rem;">You can only submit once. Make sure everything is correct.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 3: SUCCESS
+  ══════════════════════════════════════════ -->
+  <div id="successScreen" class="screen">
+    <div class="card">
+      <div class="tick">✅</div>
+      <h2>Submitted!</h2>
+      <p>Your evaluation has been recorded. Thank you.</p>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── CONFIG — replace with your deployed Web App URL ──────────
+const BACKEND_URL = "YOUR_WEB_APP_URL_HERE";
+
+// ── State ────────────────────────────────────────────────────
+let studentKey = "";
+let teammates  = [];
+let selfRating = 0;
+
+// ── Screen switcher ──────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Build self-rating buttons ────────────────────────────────
+function buildRatingButtons() {
+  const row = document.getElementById('selfRatingRow');
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'scale-btn';
+    btn.textContent = i;
+    btn.onclick = () => {
+      document.querySelectorAll('#selfRatingRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selfRating = i;
+    };
+    row.appendChild(btn);
+  }
+}
+
+// ── Build peer rows ──────────────────────────────────────────
+function buildPeerRows(teammateList) {
+  const container = document.getElementById('peerRows');
+  container.innerHTML = '';
+  teammateList.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'peer-row';
+    row.innerHTML = `
+      <input type="text" value="${name}" readonly />
+      <input type="number" id="peer_pts_${i}" min="0" max="100" placeholder="0"
+             oninput="updateTotal()" />
+    `;
+    container.appendChild(row);
+  });
+  updateTotal();
+}
+
+function updateTotal() {
+  let sum = 0;
+  teammates.forEach((_, i) => {
+    const v = parseInt(document.getElementById(`peer_pts_${i}`)?.value) || 0;
+    sum += v;
+  });
+  const el = document.getElementById('pointsTotal');
+  el.querySelector('span').textContent = sum;
+  el.className = 'points-total' + (sum === 100 ? ' exact' : sum > 100 ? ' over' : '');
+}
+
+// ── VALIDATE KEY ─────────────────────────────────────────────
+async function validateKey() {
+  const key = document.getElementById('keyInput').value.trim();
+  const errEl = document.getElementById('keyError');
+  errEl.style.display = 'none';
+
+  if (!key) { showErr(errEl, 'Please enter your access key.'); return; }
+
+  const btn = document.getElementById('keyBtn');
+  btn.disabled = true; btn.textContent = 'Checking…';
+
+  try {
+    const url  = `${BACKEND_URL}?action=validateKey&key=${encodeURIComponent(key)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (!data.ok) {
+      showErr(errEl, data.error || 'Invalid key.');
+      btn.disabled = false; btn.textContent = 'Continue →';
+      return;
+    }
+
+    studentKey = key;
+    teammates  = data.teammates;
+
+    document.getElementById('f_name').value  = data.name;
+    document.getElementById('f_group').value = data.group;
+
+    buildPeerRows(teammates);
+    buildRatingButtons();
+    showScreen('formScreen');
+
+  } catch(e) {
+    showErr(errEl, 'Could not connect. Please try again.');
+    btn.disabled = false; btn.textContent = 'Continue →';
+  }
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────
+async function submitForm() {
+  const errEl = document.getElementById('formError');
+  const infoEl = document.getElementById('formInfo');
+  errEl.style.display = 'none';
+  infoEl.style.display = 'none';
+
+  // Validate points
+  let totalPts = 0;
+  teammates.forEach((_, i) => { totalPts += parseInt(document.getElementById(`peer_pts_${i}`)?.value) || 0; });
+  if (totalPts !== 100) {
+    infoEl.textContent = `⚠️ Peer points total ${totalPts}. They must equal exactly 100.`;
+    infoEl.style.display = 'block';
+    infoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (!selfRating) { showErr(errEl, 'Please rate your own contribution.'); return; }
+  if (!document.querySelector('input[name=involvement]:checked')) { showErr(errEl, 'Please select your level of involvement.'); return; }
+  if (!document.getElementById('f_declaration').checked) { showErr(errEl, 'Please tick the declaration checkbox.'); return; }
+
+  const tasks = Array.from(document.querySelectorAll('input[name=tasks]:checked')).map(c => c.value).join('; ');
+
+  const params = new URLSearchParams({
+    action         : 'submit',
+    key            : studentKey,
+    whatIDid       : document.getElementById('f_whatIDid').value,
+    tasksHandled   : tasks,
+    hours          : document.getElementById('f_hours').value,
+    involvement    : document.querySelector('input[name=involvement]:checked')?.value || '',
+    selfRating     : selfRating,
+    selfJustification: document.getElementById('f_selfJustification').value,
+    learned        : document.getElementById('f_learned').value,
+    challenging    : document.getElementById('f_challenging').value,
+    highestContributor: document.getElementById('f_highest').value,
+    lowestContributor : document.getElementById('f_lowest').value,
+    whyHighest     : document.getElementById('f_whyHighest').value,
+    whyLowest      : document.getElementById('f_whyLowest').value,
+    teamCoordination: document.querySelector('input[name=coord]:checked')?.value || '',
+    equalWork      : document.querySelector('input[name=equal]:checked')?.value || '',
+    communication  : document.querySelector('input[name=comm]:checked')?.value  || '',
+    commitment     : document.querySelector('input[name=commit]:checked')?.value || '',
+    declaration    : 'Yes'
+  });
+
+  // Add peer data
+  teammates.forEach((name, i) => {
+    params.append(`peer${i+1}name`, name);
+    params.append(`peer${i+1}pts`,  document.getElementById(`peer_pts_${i}`)?.value || '0');
+  });
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  try {
+    const resp = await fetch(BACKEND_URL, { method: 'POST', body: params });
+    const data = await resp.json();
+    if (data.ok) {
+      showScreen('successScreen');
+    } else {
+      showErr(errEl, data.error || 'Submission failed. Please try again.');
+      btn.disabled = false; btn.textContent = 'Submit Evaluation';
+    }
+  } catch(e) {
+    showErr(errEl, 'Could not connect. Please try again.');
+    btn.disabled = false; btn.textContent = 'Submit Evaluation';
+  }
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Allow Enter key on key input
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') validateKey();
+  });
+});
+</script>
+</body>
+</html>
